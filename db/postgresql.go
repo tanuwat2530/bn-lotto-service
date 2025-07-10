@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"gorm.io/driver/postgres"
@@ -14,7 +15,8 @@ func InitDB() (*gorm.DB, error) {
 	// --- 1. Database Connection String (DSN) ---
 	// It's good practice to fetch these values from environment variables
 	// or a configuration file in a real application.
-	dsn := "host=localhost user=root password=11111111 dbname=lotto_db port=5432 sslmode=disable TimeZone=Asia/Bangkok search_path=root@lotto_db"
+	dbConnection := os.Getenv("DB_CONNECTION")
+	dsn := dbConnection
 
 	// --- 2. Open GORM Database Connection ---
 	// gorm.Open creates an initial connection and prepares a connection pool.
