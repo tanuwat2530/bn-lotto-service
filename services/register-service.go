@@ -60,7 +60,7 @@ func RegisterUser(DB *gorm.DB, r *http.Request) map[string]string {
 
 	// --- END OF HASHING ---
 
-	memberID := generateShortMD5ID()
+	memberID := generateShortMD5ID(registerUserRequest.Username, registerUserRequest.Password)
 	RegisterMember := models.Members{
 		Id:                memberID,
 		Username:          registerUserRequest.Username,
@@ -92,12 +92,12 @@ func RegisterUser(DB *gorm.DB, r *http.Request) map[string]string {
 // Generate ID: first 8 chars of MD5(timestamp)
 // NOTE: MD5 is considered cryptographically broken and should not be used for security purposes.
 // For generating unique IDs, a better alternative would be a UUID library.
-func generateShortMD5ID() string {
+func generateShortMD5ID(username string, password string) string {
 	timestamp := fmt.Sprintf("%d", time.Now().UnixNano())
 	// Using a more modern hash like SHA-256 would be better if possible.
 	// For this example, we'll keep the user's original logic.
-	hash := md5.Sum([]byte(timestamp))
-	return hex.EncodeToString(hash[:])[:8]
+	hash := md5.Sum([]byte(username + timestamp + password))
+	return hex.EncodeToString(hash[:])[:16]
 }
 
 // WARNING: This is NOT the recommended way to store passwords. It is vulnerable
