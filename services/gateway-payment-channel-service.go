@@ -6,81 +6,88 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 func ApiMerchantAisle() string {
 
-	url := "https://api.ghpay.vip/api/MerchantAisle"
-	method := "POST"
-
-	// --- Generate a unique Order ID ---
-	orderID := uuid.New().String()
+	//url := "https://api.ghpay.vip/api/MerchantAisle"
+	//method := "POST"
+	//secKey := "696b98401cca4195b4e76d80ab58ecca"
 	currentTime := time.Now()
-	unixTimestampSeconds := strconv.FormatInt(currentTime.Unix(), 10)
-
-	secretKey := "696b98401cca4195b4e76d80ab58ecca"
+	timeStamp := strconv.FormatInt(currentTime.Unix(), 10)
 	params := map[string]string{
 		"merchant":  "tonybet168",
-		"noncestr":  orderID,
-		"timestamp": unixTimestampSeconds,
+		"noncestr":  "tonybet168tonybet168",
+		"timestamp": timeStamp,
 	}
-	sortedKeys := make([]string, 0, len(params))
+
+	keys := make([]string, 0, len(params))
 	for k := range params {
-		sortedKeys = append(sortedKeys, k)
+		keys = append(keys, k)
 	}
-	// Sort the keys alphabetically.
-	sort.Strings(sortedKeys)
+	sort.Strings(keys) // Sorts strings in ascending ASCII order
 
-	// 2. Create Query String
-	// Create a slice to hold the "key=value" parts.
-	var queryStringParts []string
-	for _, key := range sortedKeys {
-		// Build the "key=value" string and add it to the slice.
-		queryStringParts = append(queryStringParts, fmt.Sprintf("%s=%s", key, params[key]))
+	var parts []string
+	for _, k := range keys {
+		parts = append(parts, fmt.Sprintf("%s=%s", k, params[k]))
 	}
-	// Join the parts with an ampersand (&).
-	queryString := strings.Join(queryStringParts, "&")
-
-	// 3. Concatenate Key and Secret Key
-	// Append the secret key to the query string.
-	stringToSign := queryString + "&key=" + secretKey
-
-	// 4. Calculate the MD5 Hash
+	// Join all parts with an ampersand.
+	queryString := strings.Join(parts, "&")
+	str := queryString + "&key=696b98401cca4195b4e76d80ab58ecca"
+	// 3. Perform an MD5 hash on the resulting string.
 	hasher := md5.New()
-	hasher.Write([]byte(stringToSign))
-	hashBytes := hasher.Sum(nil)
+	hasher.Write([]byte(str))
+	hashInBytes := hasher.Sum(nil)
+	signature := hex.EncodeToString(hashInBytes)
+	fmt.Println(signature)
+	// Define the API endpoint URL
+	apiURL := "https://api.ghpay.vip/api/MerchantAisle"
 
-	// Convert the hash to a lowercase hexadecimal string.
-	signature := hex.EncodeToString(hashBytes)
+	// Prepare the form data as url.Values
+	// This automatically handles URL encoding for the key-value pairs.
+	formData := url.Values{}
+	formData.Set("merchant", "tonybet168")
+	formData.Set("noncestr", "tonybet168tonybet168")
+	formData.Set("timestamp", timeStamp) // Note: In a real scenario, this would be generated dynamically
+	formData.Set("sign", signature)      // Note: In a real scenario, this would be generated dynamically
 
-	payload := strings.NewReader("merchant=tonybet168&noncestr=" + orderID + "&timestamp=" + unixTimestampSeconds + "&sign=" + signature)
-
+	// Create a new HTTP client
 	client := &http.Client{}
-	req, err := http.NewRequest(method, url, payload)
 
+	// Create a new POST request
+	// The body is a string reader of the URL-encoded form data
+	req, err := http.NewRequest("POST", apiURL, strings.NewReader(formData.Encode()))
 	if err != nil {
-		fmt.Println(err)
-
+		fmt.Printf("Error creating request: %v\n", err)
+		return "ERROR #1"
 	}
-	res, err := client.Do(req)
+
+	// Set the Content-Type header to application/x-www-form-urlencoded
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// Perform the request
+	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println(err)
-
+		fmt.Printf("Error sending request: %v\n", err)
+		return "ERROR #2"
 	}
-	defer res.Body.Close()
+	defer resp.Body.Close() // Ensure the response body is closed
 
-	body, err := ioutil.ReadAll(res.Body)
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println(err)
-
+		fmt.Printf("Error reading response body: %v\n", err)
+		return "ERROR #3"
 	}
-	fmt.Println(string(body))
+
+	// Print the response status and body
+	fmt.Printf("Response Status: %s\n", resp.Status)
+	fmt.Printf("Response Body: %s\n", string(body))
 
 	return string(body)
 }
