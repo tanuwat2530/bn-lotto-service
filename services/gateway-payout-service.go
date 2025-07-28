@@ -10,22 +10,19 @@ import (
 	"log"
 	"net/http"
 	"sort"
-	"strconv"
 	"strings"
-
-	"github.com/google/uuid"
 )
 
 // ApiPayload represents the structure of the JSON payload to be sent.
 type PayOutPayload struct {
 	PaymentType string `json:"paymentType"`
 	Merchant    string `json:"merchant"`
-	Gold        int    `json:"gold"`
-	Channel     int    `json:"channel"` //0 = QR Code, 1 = Bank Transfer
+	Gold        string `json:"gold"`
+	Channel     string `json:"channel"` //0 = QR Code, 1 = Bank Transfer
 	OrderID     string `json:"orderId"`
 	NotifyURL   string `json:"notify_url"`
 	//OrderAttach     string `json:"order_attach"`
-	FeeType         int    `json:"feeType"`
+	FeeType         string `json:"feeType"`
 	TransferAccount string `json:"transferAccount"`
 	Name            string `json:"name"`
 	Phone           string `json:"phone"`
@@ -37,75 +34,51 @@ type PayOutPayload struct {
 // ApiPayin constructs the request, generates a signature, and sends the request.
 func ApiPayout() string {
 
-	paymentType := "1001"
-	merchant := "tonybet168"
-	amount := 50
-	channel := 0
-	orderId := uuid.New().String()
-	notiUrl := "https://tonybet168.com/payin-noti"
-	bankAccount := "1992367357"
-	bankOwner := "ธีรศักดิ์ พูลเลิศ"
-	phone := "0942750713"
-
-	secretKey := "Secret Key"
 	params := map[string]string{
-		"paymentType":     paymentType,
-		"merchant":        merchant,
-		"gold":            strconv.FormatInt(int64(amount), 10),
+		"paymentType":     "2001",
+		"merchant":        "tonybet168",
+		"gold":            "60",
 		"channel":         "0",
-		"orderId":         orderId,
-		"notify_url":      notiUrl,
+		"notify_url":      "http://www.baidu.cim",
 		"feeType":         "0",
-		"transferAccount": bankAccount,
-		"name":            bankOwner,
-		"phone":           phone,
+		"transferAccount": "123456",
+		"name":            "123456",
+		"phone":           "123456",
 	}
 
-	sortedKeys := make([]string, 0, len(params))
+	keys := make([]string, 0, len(params))
 	for k := range params {
-		sortedKeys = append(sortedKeys, k)
+		keys = append(keys, k)
 	}
-	// Sort the keys alphabetically.
-	sort.Strings(sortedKeys)
+	sort.Strings(keys) // Sorts strings in ascending ASCII order
 
-	// 2. Create Query String
-	// Create a slice to hold the "key=value" parts.
-	var queryStringParts []string
-	for _, key := range sortedKeys {
-		// Build the "key=value" string and add it to the slice.
-		queryStringParts = append(queryStringParts, fmt.Sprintf("%s=%s", key, params[key]))
+	var parts []string
+	for _, k := range keys {
+		parts = append(parts, fmt.Sprintf("%s=%s", k, params[k]))
 	}
-	// Join the parts with an ampersand (&).
-	queryString := strings.Join(queryStringParts, "&")
+	// Join all parts with an ampersand.
+	queryString := strings.Join(parts, "&")
+	str := queryString + "&key=696b98401cca4195b4e76d80ab58ecca"
 
-	// 3. Concatenate Key and Secret Key
-	// Append the secret key to the query string.
-	stringToSign := queryString + "&key=" + secretKey
-
-	// 4. Calculate the MD5 Hash
+	// 3. Perform an MD5 hash on the resulting string.
 	hasher := md5.New()
-	hasher.Write([]byte(stringToSign))
-	hashBytes := hasher.Sum(nil)
-
-	// Convert the hash to a lowercase hexadecimal string.
-	signature := hex.EncodeToString(hashBytes)
+	hasher.Write([]byte(str))
+	hashInBytes := hasher.Sum(nil)
+	signature := hex.EncodeToString(hashInBytes)
+	fmt.Println(signature)
 
 	// --- Step 3: Construct the final payload struct ---
 	finalPayload := PayOutPayload{
-		PaymentType: paymentType,
-		Merchant:    merchant,
-		Gold:        amount,
-		Channel:     channel,
-		OrderID:     orderId,
-		NotifyURL:   notiUrl,
-		//OrderAttach:     "123213",
-		FeeType:         0,
-		TransferAccount: bankAccount,
-		Name:            bankOwner,
-		Phone:           phone,
-		//BankCode:        "",
-		//IdCard:          "",
-		Sign: signature,
+		PaymentType:     "2001",
+		Merchant:        "tonybet168",
+		Gold:            "60",
+		Channel:         "0",
+		NotifyURL:       "http://www.baidu.cim",
+		FeeType:         "0",
+		TransferAccount: "123456",
+		Name:            "123456",
+		Phone:           "123456",
+		Sign:            signature,
 	}
 
 	// --- Step 4: Marshal the struct into a JSON byte slice ---

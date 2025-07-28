@@ -45,6 +45,7 @@ func ApiMerchantAisle() string {
 	hashInBytes := hasher.Sum(nil)
 	signature := hex.EncodeToString(hashInBytes)
 	fmt.Println(signature)
+
 	// Define the API endpoint URL
 	apiURL := "https://api.ghpay.vip/api/MerchantAisle"
 
@@ -86,8 +87,8 @@ func ApiMerchantAisle() string {
 	}
 
 	// Print the response status and body
-	fmt.Printf("Response Status: %s\n", resp.Status)
-	fmt.Printf("Response Body: %s\n", string(body))
+	//fmt.Printf("Response Status: %s\n", resp.Status)
+	//fmt.Printf("Response Body: %s\n", string(body))
 
 	return string(body)
 }
