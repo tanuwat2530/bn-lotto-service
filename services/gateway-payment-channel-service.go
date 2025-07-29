@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -17,7 +18,7 @@ func ApiMerchantAisle() string {
 
 	//url := "https://api.ghpay.vip/api/MerchantAisle"
 	//method := "POST"
-	//secKey := "696b98401cca4195b4e76d80ab58ecca"
+	secretKey := os.Getenv("SECRET_KEY")
 	currentTime := time.Now()
 	timeStamp := strconv.FormatInt(currentTime.Unix(), 10)
 	params := map[string]string{
@@ -38,7 +39,7 @@ func ApiMerchantAisle() string {
 	}
 	// Join all parts with an ampersand.
 	queryString := strings.Join(parts, "&")
-	str := queryString + "&key=696b98401cca4195b4e76d80ab58ecca"
+	str := queryString + "&key=" + secretKey
 	// 3. Perform an MD5 hash on the resulting string.
 	hasher := md5.New()
 	hasher.Write([]byte(str))

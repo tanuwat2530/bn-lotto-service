@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"os"
 	"sort"
 	"strings"
 )
@@ -15,7 +16,7 @@ func GatewaySignature() string {
 	//func GatewaySignature(params map[string]string, secretKey string) string {
 	// 1. Retrieve and Sort Query Parameter Keys
 	// Create a slice to hold the keys from the map.
-	secretKey := "Secret Key"
+	secretKey := os.Getenv("SECRET_KEY")
 	params := map[string]string{
 		"merchant":    "Merchant ID",
 		"paymentType": "Channel",

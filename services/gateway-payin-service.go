@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"sort"
 	"strings"
 )
@@ -29,6 +30,7 @@ type PayInPayload struct {
 // ApiPayin constructs the request, generates a signature, and sends the request.
 func ApiPayin() string {
 
+	secretKey := os.Getenv("SECRET_KEY")
 	//paymentType := "1001"
 	//merchant := "tonybet168"
 	//amount := 50
@@ -36,13 +38,11 @@ func ApiPayin() string {
 	//orderId := uuid.New().String()
 	//notiUrl := "https://tonybet168.com/payin-noti"
 
-	//secretKey := "696b98401cca4195b4e76d80ab58ecca"
-
 	params := map[string]string{
 		"merchant":    "tonybet168",
-		"paymentType": "1001",
+		"paymentType": "1059",
 		"gold":        "2000",
-		"channel":     "0",
+		"channel":     "1",
 		"notify_url":  "http://www.baidu.cim",
 		"feeType":     "0",
 	}
@@ -59,7 +59,7 @@ func ApiPayin() string {
 	}
 	// Join all parts with an ampersand.
 	queryString := strings.Join(parts, "&")
-	str := queryString + "&key=696b98401cca4195b4e76d80ab58ecca"
+	str := queryString + "&key=" + secretKey
 
 	// 3. Perform an MD5 hash on the resulting string.
 	hasher := md5.New()
@@ -71,9 +71,9 @@ func ApiPayin() string {
 	// --- Step 3: Construct the final payload struct ---
 	finalPayload := PayInPayload{
 		Merchant:    "tonybet168",
-		PaymentType: "1001",
+		PaymentType: "1059",
 		Gold:        "2000",
-		Channel:     "0",
+		Channel:     "1",
 		NotifyURL:   "http://www.baidu.cim",
 		FeeType:     "0",
 		Sign:        signature,

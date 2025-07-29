@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"sort"
 	"strings"
 )
@@ -33,7 +34,7 @@ type PayOutPayload struct {
 
 // ApiPayin constructs the request, generates a signature, and sends the request.
 func ApiPayout() string {
-
+	secretKey := os.Getenv("SECRET_KEY")
 	params := map[string]string{
 		"paymentType":     "2001",
 		"merchant":        "tonybet168",
@@ -58,7 +59,7 @@ func ApiPayout() string {
 	}
 	// Join all parts with an ampersand.
 	queryString := strings.Join(parts, "&")
-	str := queryString + "&key=696b98401cca4195b4e76d80ab58ecca"
+	str := queryString + "&key=" + secretKey
 
 	// 3. Perform an MD5 hash on the resulting string.
 	hasher := md5.New()
