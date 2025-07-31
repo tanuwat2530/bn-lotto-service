@@ -11,6 +11,6 @@ import (
 
 // GetUsers handles GET /users
 func PayOutController(DB *gorm.DB, w http.ResponseWriter, r *http.Request) {
-	response := services.ApiPayout()
+	response := services.ApiPayout(DB, r)
 	utils.RespondWithJSON(w, http.StatusOK, response)
 }

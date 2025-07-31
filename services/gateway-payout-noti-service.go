@@ -5,9 +5,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
-func PayOutNotification() string {
+func PayOutNotification(DB *gorm.DB, r *http.Request) string {
 
 	url := "https://api.ghpay.vip/api/payOut"
 	method := "POST"

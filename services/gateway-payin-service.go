@@ -12,7 +12,14 @@ import (
 	"os"
 	"sort"
 	"strings"
+
+	"gorm.io/gorm"
 )
+
+type PayinRequest struct {
+	Amout   string `json:"amout"`
+	Channel string `json:"chanel"`
+}
 
 // ApiPayload represents the structure of the JSON payload to be sent.
 type PayInPayload struct {
@@ -28,22 +35,26 @@ type PayInPayload struct {
 }
 
 // ApiPayin constructs the request, generates a signature, and sends the request.
-func ApiPayin() string {
+func ApiPayin(DB *gorm.DB, r *http.Request) string {
 
 	secretKey := os.Getenv("SECRET_KEY")
-	//paymentType := "1001"
-	//merchant := "tonybet168"
-	//amount := 50
-	//channel := 0
+	gatewayAccount := os.Getenv("GATEWAY_ACCOUNT")
+
+	var payinRequest PayinRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&payinRequest); err != nil {
+		fmt.Println("Invalid JSON format")
+	}
+
 	//orderId := uuid.New().String()
-	//notiUrl := "https://tonybet168.com/payin-noti"
+	notiUrl := "https://tonybet168.com/payin-noti"
 
 	params := map[string]string{
-		"merchant":    "tonybet168",
+		"merchant":    gatewayAccount,
 		"paymentType": "1059",
-		"gold":        "2000",
-		"channel":     "1",
-		"notify_url":  "http://www.baidu.cim",
+		"gold":        payinRequest.Amout,
+		"channel":     payinRequest.Channel,
+		"notify_url":  notiUrl,
 		"feeType":     "0",
 	}
 
@@ -70,11 +81,11 @@ func ApiPayin() string {
 
 	// --- Step 3: Construct the final payload struct ---
 	finalPayload := PayInPayload{
-		Merchant:    "tonybet168",
+		Merchant:    gatewayAccount,
 		PaymentType: "1059",
-		Gold:        "2000",
-		Channel:     "1",
-		NotifyURL:   "http://www.baidu.cim",
+		Gold:        payinRequest.Amout,
+		Channel:     payinRequest.Channel,
+		NotifyURL:   notiUrl,
 		FeeType:     "0",
 		Sign:        signature,
 	}

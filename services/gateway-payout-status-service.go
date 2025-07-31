@@ -11,6 +11,8 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+
+	"gorm.io/gorm"
 )
 
 type PayOutStatusPayload struct {
@@ -19,7 +21,7 @@ type PayOutStatusPayload struct {
 	Sign     string `json:"sign"`
 }
 
-func PayOutStatus() string {
+func PayOutStatus(DB *gorm.DB, r *http.Request) string {
 
 	merchant := "tonybet168"
 	orderId := "from-payout"

@@ -12,7 +12,17 @@ import (
 	"os"
 	"sort"
 	"strings"
+
+	"gorm.io/gorm"
 )
+
+type PayoutRequest struct {
+	Amout           string `json:"amout"`
+	Channel         string `json:"chanel"`
+	TransferAccount string `"transferAccount`
+	TransferName    string `transferName`
+	TransferPhone   string `transferPhone`
+}
 
 // ApiPayload represents the structure of the JSON payload to be sent.
 type PayOutPayload struct {
@@ -33,18 +43,26 @@ type PayOutPayload struct {
 }
 
 // ApiPayin constructs the request, generates a signature, and sends the request.
-func ApiPayout() string {
+func ApiPayout(DB *gorm.DB, r *http.Request) string {
 	secretKey := os.Getenv("SECRET_KEY")
+	gatewayAccount := os.Getenv("GATEWAY_ACCOUNT")
+
+	var payoutRequest PayoutRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&payoutRequest); err != nil {
+		fmt.Println("Invalid JSON format")
+	}
+
 	params := map[string]string{
 		"paymentType":     "2001",
-		"merchant":        "tonybet168",
-		"gold":            "60",
-		"channel":         "0",
+		"merchant":        gatewayAccount,
+		"gold":            payoutRequest.Amout,
+		"channel":         payoutRequest.Channel,
 		"notify_url":      "http://www.baidu.cim",
 		"feeType":         "0",
-		"transferAccount": "123456",
-		"name":            "123456",
-		"phone":           "123456",
+		"transferAccount": payoutRequest.TransferAccount,
+		"name":            payoutRequest.TransferName,
+		"phone":           payoutRequest.TransferPhone,
 	}
 
 	keys := make([]string, 0, len(params))
@@ -71,14 +89,14 @@ func ApiPayout() string {
 	// --- Step 3: Construct the final payload struct ---
 	finalPayload := PayOutPayload{
 		PaymentType:     "2001",
-		Merchant:        "tonybet168",
-		Gold:            "60",
-		Channel:         "0",
+		Merchant:        gatewayAccount,
+		Gold:            payoutRequest.Amout,
+		Channel:         payoutRequest.Channel,
 		NotifyURL:       "http://www.baidu.cim",
 		FeeType:         "0",
-		TransferAccount: "123456",
-		Name:            "123456",
-		Phone:           "123456",
+		TransferAccount: payoutRequest.TransferAccount,
+		Name:            payoutRequest.TransferName,
+		Phone:           payoutRequest.TransferPhone,
 		Sign:            signature,
 	}
 
