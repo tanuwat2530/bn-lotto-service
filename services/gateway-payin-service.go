@@ -8,17 +8,25 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"time"
+
 	"net/http"
 	"os"
 	"sort"
 	"strings"
 
+	models "lotto-backend-api/models"
+
 	"gorm.io/gorm"
 )
 
 type PayinRequest struct {
-	Amout   string `json:"amout"`
-	Channel string `json:"chanel"`
+	MemberId    string `json:"member_id"`
+	Amout       string `json:"amout"`
+	Channel     string `json:"chanel"`
+	NotiUrl     string `json:"noti_url"`
+	PaymentType string `json:"payment_type"`
+	FeeType     string `json:"fee_type"`
 }
 
 // ApiPayload represents the structure of the JSON payload to be sent.
@@ -36,7 +44,7 @@ type PayInPayload struct {
 
 // ApiPayin constructs the request, generates a signature, and sends the request.
 func ApiPayin(DB *gorm.DB, r *http.Request) string {
-
+	defer r.Body.Close()
 	secretKey := os.Getenv("SECRET_KEY")
 	gatewayAccount := os.Getenv("GATEWAY_ACCOUNT")
 
@@ -46,16 +54,13 @@ func ApiPayin(DB *gorm.DB, r *http.Request) string {
 		fmt.Println("Invalid JSON format")
 	}
 
-	//orderId := uuid.New().String()
-	notiUrl := "https://tonybet168.com/payin-noti"
-
 	params := map[string]string{
 		"merchant":    gatewayAccount,
-		"paymentType": "1059",
+		"paymentType": payinRequest.PaymentType, //1059
 		"gold":        payinRequest.Amout,
 		"channel":     payinRequest.Channel,
-		"notify_url":  notiUrl,
-		"feeType":     "0",
+		"notify_url":  payinRequest.NotiUrl,
+		"feeType":     payinRequest.FeeType,
 	}
 
 	keys := make([]string, 0, len(params))
@@ -77,19 +82,19 @@ func ApiPayin(DB *gorm.DB, r *http.Request) string {
 	hasher.Write([]byte(str))
 	hashInBytes := hasher.Sum(nil)
 	signature := hex.EncodeToString(hashInBytes)
-	fmt.Println(signature)
+	//fmt.Println(signature)
 
 	// --- Step 3: Construct the final payload struct ---
 	finalPayload := PayInPayload{
 		Merchant:    gatewayAccount,
-		PaymentType: "1059",
+		PaymentType: payinRequest.PaymentType,
 		Gold:        payinRequest.Amout,
 		Channel:     payinRequest.Channel,
-		NotifyURL:   notiUrl,
-		FeeType:     "0",
+		NotifyURL:   payinRequest.NotiUrl,
+		FeeType:     payinRequest.FeeType,
 		Sign:        signature,
 	}
-
+	//fmt.Println(finalPayload)
 	// --- Step 4: Marshal the struct into a JSON byte slice ---
 	payloadBytes, err := json.Marshal(finalPayload)
 	if err != nil {
@@ -121,7 +126,32 @@ func ApiPayin(DB *gorm.DB, r *http.Request) string {
 	body, err := io.ReadAll(res.Body) // Use io.ReadAll instead of deprecated ioutil
 	if err != nil {
 		log.Printf("Error reading response body: %v", err)
+	}
 
+	currentTime := time.Now()
+	year := currentTime.Year()
+	month := int(currentTime.Month())
+	day := currentTime.Day()
+	dateString := fmt.Sprintf("%d-%02d-%02d", year, month, day)
+
+	hour := currentTime.Hour()
+	minute := int(currentTime.Minute())
+	second := currentTime.Second()
+	timeString := fmt.Sprintf("%02d:%02d:%02d", hour, minute, second)
+
+	PayinData := models.Payins{
+		//Id:          "",
+		OrderId:     "",
+		RequestDate: dateString,
+		RequestTime: timeString,
+		GatewayData: string(body),
+		RequestData: string(payloadBytes),
+		MemberId:    payinRequest.MemberId,
+	}
+
+	result := DB.Create(&PayinData)
+	if result.Error != nil {
+		fmt.Println("PAYIN INSERT ERROR")
 	}
 
 	return string(body)

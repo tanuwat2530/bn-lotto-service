@@ -8,20 +8,28 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"time"
+
 	"net/http"
 	"os"
 	"sort"
 	"strings"
 
 	"gorm.io/gorm"
+
+	models "lotto-backend-api/models"
 )
 
 type PayoutRequest struct {
-	Amout           string `json:"amout"`
-	Channel         string `json:"chanel"`
-	TransferAccount string `"transferAccount`
-	TransferName    string `transferName`
-	TransferPhone   string `transferPhone`
+	MemberId      string `json:"member_id"`
+	Amout         string `json:"amout"`
+	Channel       string `json:"chanel"`
+	PayoutAccount string `json:"transfer_account"`
+	PayoutName    string `json:"transfer_name"`
+	PayoutPhone   string `json:"transfer_phone"`
+	NotiUrl       string `json:"noti_url"`
+	FeeType       string `json:"fee_type"`
+	PaymentType   string `json:"payment_type"`
 }
 
 // ApiPayload represents the structure of the JSON payload to be sent.
@@ -54,15 +62,15 @@ func ApiPayout(DB *gorm.DB, r *http.Request) string {
 	}
 
 	params := map[string]string{
-		"paymentType":     "2001",
+		"paymentType":     payoutRequest.PaymentType,
 		"merchant":        gatewayAccount,
 		"gold":            payoutRequest.Amout,
 		"channel":         payoutRequest.Channel,
-		"notify_url":      "http://www.baidu.cim",
-		"feeType":         "0",
-		"transferAccount": payoutRequest.TransferAccount,
-		"name":            payoutRequest.TransferName,
-		"phone":           payoutRequest.TransferPhone,
+		"notify_url":      payoutRequest.NotiUrl,
+		"feeType":         payoutRequest.FeeType,
+		"transferAccount": payoutRequest.PayoutAccount,
+		"name":            payoutRequest.PayoutName,
+		"phone":           payoutRequest.PayoutPhone,
 	}
 
 	keys := make([]string, 0, len(params))
@@ -84,19 +92,19 @@ func ApiPayout(DB *gorm.DB, r *http.Request) string {
 	hasher.Write([]byte(str))
 	hashInBytes := hasher.Sum(nil)
 	signature := hex.EncodeToString(hashInBytes)
-	fmt.Println(signature)
+	//fmt.Println(signature)
 
 	// --- Step 3: Construct the final payload struct ---
 	finalPayload := PayOutPayload{
-		PaymentType:     "2001",
+		PaymentType:     payoutRequest.PaymentType,
 		Merchant:        gatewayAccount,
 		Gold:            payoutRequest.Amout,
 		Channel:         payoutRequest.Channel,
-		NotifyURL:       "http://www.baidu.cim",
-		FeeType:         "0",
-		TransferAccount: payoutRequest.TransferAccount,
-		Name:            payoutRequest.TransferName,
-		Phone:           payoutRequest.TransferPhone,
+		NotifyURL:       payoutRequest.NotiUrl,
+		FeeType:         payoutRequest.FeeType,
+		TransferAccount: payoutRequest.PayoutAccount,
+		Name:            payoutRequest.PayoutName,
+		Phone:           payoutRequest.PayoutPhone,
 		Sign:            signature,
 	}
 
@@ -133,6 +141,32 @@ func ApiPayout(DB *gorm.DB, r *http.Request) string {
 		log.Printf("Error reading response body: %v", err)
 
 	}
+
+	currentTime := time.Now()
+	year := currentTime.Year()
+	month := int(currentTime.Month())
+	day := currentTime.Day()
+	dateString := fmt.Sprintf("%d-%02d-%02d", year, month, day)
+
+	hour := currentTime.Hour()
+	minute := int(currentTime.Minute())
+	second := currentTime.Second()
+	timeString := fmt.Sprintf("%02d:%02d:%02d", hour, minute, second)
+	PayoutData := models.Payouts{
+		//Id:          ,
+		OrderId:     "",
+		RequestDate: dateString,
+		RequestTime: timeString,
+		GatewayData: string(body),
+		RequestData: string(payloadBytes),
+		MemberId:    payoutRequest.MemberId,
+	}
+
+	result := DB.Create(&PayoutData)
+	if result.Error != nil {
+		fmt.Println("PAYOUT INSERT ERROR")
+	}
+	//fmt.Println(result)
 
 	return string(body)
 }
