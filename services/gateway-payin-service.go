@@ -22,8 +22,8 @@ import (
 
 type PayinRequest struct {
 	MemberId    string `json:"member_id"`
-	Amout       string `json:"amout"`
-	Channel     string `json:"chanel"`
+	Amount      string `json:"amount"`
+	Channel     string `json:"channel"`
 	NotiUrl     string `json:"noti_url"`
 	PaymentType string `json:"payment_type"`
 	FeeType     string `json:"fee_type"`
@@ -53,11 +53,12 @@ func ApiPayin(DB *gorm.DB, r *http.Request) string {
 	if err := json.NewDecoder(r.Body).Decode(&payinRequest); err != nil {
 		fmt.Println("Invalid JSON format")
 	}
-
+	fmt.Println(payinRequest.Amount)
+	fmt.Println(payinRequest.Channel)
 	params := map[string]string{
 		"merchant":    gatewayAccount,
 		"paymentType": payinRequest.PaymentType, //1059
-		"gold":        payinRequest.Amout,
+		"gold":        payinRequest.Amount,
 		"channel":     payinRequest.Channel,
 		"notify_url":  payinRequest.NotiUrl,
 		"feeType":     payinRequest.FeeType,
@@ -88,7 +89,7 @@ func ApiPayin(DB *gorm.DB, r *http.Request) string {
 	finalPayload := PayInPayload{
 		Merchant:    gatewayAccount,
 		PaymentType: payinRequest.PaymentType,
-		Gold:        payinRequest.Amout,
+		Gold:        payinRequest.Amount,
 		Channel:     payinRequest.Channel,
 		NotifyURL:   payinRequest.NotiUrl,
 		FeeType:     payinRequest.FeeType,
@@ -101,7 +102,6 @@ func ApiPayin(DB *gorm.DB, r *http.Request) string {
 		log.Printf("Error marshalling JSON: %v", err)
 
 	}
-
 	// --- Step 5: Make the HTTP request ---
 	url := "https://api.ghpay.vip/api/payIn" // Use a full URL
 	method := "POST"
