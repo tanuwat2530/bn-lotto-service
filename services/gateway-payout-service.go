@@ -22,8 +22,8 @@ import (
 
 type PayoutRequest struct {
 	MemberId      string `json:"member_id"`
-	Amout         string `json:"amout"`
-	Channel       string `json:"chanel"`
+	Amount        string `json:"amount"`
+	Channel       string `json:"channel"`
 	PayoutAccount string `json:"transfer_account"`
 	PayoutName    string `json:"transfer_name"`
 	PayoutPhone   string `json:"transfer_phone"`
@@ -65,7 +65,7 @@ func ApiPayout(DB *gorm.DB, r *http.Request) string {
 	params := map[string]string{
 		"paymentType":     payoutRequest.PaymentType,
 		"merchant":        gatewayAccount,
-		"gold":            payoutRequest.Amout,
+		"gold":            payoutRequest.Amount,
 		"channel":         payoutRequest.Channel,
 		"notify_url":      payoutRequest.NotiUrl,
 		"feeType":         payoutRequest.FeeType,
@@ -100,7 +100,7 @@ func ApiPayout(DB *gorm.DB, r *http.Request) string {
 	finalPayload := PayOutPayload{
 		PaymentType:     payoutRequest.PaymentType,
 		Merchant:        gatewayAccount,
-		Gold:            payoutRequest.Amout,
+		Gold:            payoutRequest.Amount,
 		Channel:         payoutRequest.Channel,
 		NotifyURL:       payoutRequest.NotiUrl,
 		FeeType:         payoutRequest.FeeType,
