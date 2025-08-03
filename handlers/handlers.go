@@ -33,6 +33,15 @@ func (h *LottoHandler) Login(w http.ResponseWriter, r *http.Request) {
 	controllers.LoginController(h.DB, w, r)
 }
 
+func (h *LottoHandler) CreditBalance(w http.ResponseWriter, r *http.Request) {
+	// Check if the method is POST
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	controllers.CreditBalanceController(h.DB, w, r)
+}
+
 func (h *LottoHandler) PaymentChannel(w http.ResponseWriter, r *http.Request) {
 	// Check if the method is POST
 	if r.Method != http.MethodPost {

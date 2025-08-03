@@ -25,6 +25,7 @@ func SetupRoutes(db *gorm.DB) http.Handler {
 	// Each of these handlers now has access to the database via `lottoHandlers.DB`.
 	mux.HandleFunc("/lotto-api/register", lottoHandlers.Register)
 	mux.HandleFunc("/lotto-api/login", lottoHandlers.Login)
+	mux.HandleFunc("/lotto-api/credit", lottoHandlers.CreditBalance)
 
 	mux.HandleFunc("/gateway-api/payment-channel", lottoHandlers.PaymentChannel)
 	mux.HandleFunc("/gateway-api/bank-provider", lottoHandlers.BankProvider)

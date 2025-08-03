@@ -72,7 +72,7 @@ func ApiPayout(DB *gorm.DB, r *http.Request) string {
 		"transferAccount": payoutRequest.PayoutAccount,
 		"name":            payoutRequest.PayoutName,
 		"phone":           payoutRequest.PayoutPhone,
-		//"bankCode":        payoutRequest.BankProvider,
+		"bankCode":        payoutRequest.BankProvider,
 	}
 
 	keys := make([]string, 0, len(params))
@@ -107,8 +107,8 @@ func ApiPayout(DB *gorm.DB, r *http.Request) string {
 		TransferAccount: payoutRequest.PayoutAccount,
 		Name:            payoutRequest.PayoutName,
 		Phone:           payoutRequest.PayoutPhone,
-		//BankCode:        payoutRequest.BankProvider,
-		Sign: signature,
+		BankCode:        payoutRequest.BankProvider,
+		Sign:            signature,
 	}
 
 	// --- Step 4: Marshal the struct into a JSON byte slice ---
