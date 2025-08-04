@@ -42,6 +42,15 @@ func (h *LottoHandler) Bet(w http.ResponseWriter, r *http.Request) {
 	controllers.BetController(h.DB, w, r)
 }
 
+func (h *LottoHandler) History(w http.ResponseWriter, r *http.Request) {
+	// Check if the method is POST
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	controllers.HistoryController(h.DB, w, r)
+}
+
 func (h *LottoHandler) CreditBalance(w http.ResponseWriter, r *http.Request) {
 	// Check if the method is POST
 	if r.Method != http.MethodPost {
