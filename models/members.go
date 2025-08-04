@@ -8,5 +8,5 @@ type Members struct {
 	BankProviderId    string `json:"bank_provider_id"`
 	BankAccountNumber string `json:"bank_account_number"`
 	BankAccountOwner  string `json:"bank_account_owner"`
-	CreditBalance     int8   `json:"credit_balance"`
+	CreditBalance     string `json:"credit_balance"`
 }

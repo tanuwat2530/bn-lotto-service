@@ -25,7 +25,7 @@ type UserResponse struct {
 	BankProviderId    string `json:"bank_provider_id"`
 	BankAccountNumber string `json:"bank_account_number"`
 	BankAccountOwner  string `json:"bank_account_owner"`
-	CreditBalance     int8   `json:"credit_balance"`
+	CreditBalance     string `json:"credit_balance"`
 }
 
 // hashLoginPasswordSHA256 creates a consistent SHA-256 hash for a given password.
@@ -70,7 +70,7 @@ func LoginUser(DB *gorm.DB, r *http.Request) map[string]interface{} {
 		BankProviderId:    member.BankProviderId,
 		BankAccountNumber: member.BankAccountNumber,
 		BankAccountOwner:  member.BankAccountOwner,
-		CreditBalance:     int8(member.CreditBalance),
+		CreditBalance:     member.CreditBalance,
 	}
 
 	// --- SUCCESS RESPONSE ---

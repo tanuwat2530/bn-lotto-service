@@ -69,7 +69,7 @@ func RegisterUser(DB *gorm.DB, r *http.Request) map[string]string {
 		BankProviderId:    "",
 		BankAccountNumber: "",
 		BankAccountOwner:  "",
-		CreditBalance:     0,
+		CreditBalance:     "0",
 	}
 
 	result := DB.Create(&RegisterMember)
