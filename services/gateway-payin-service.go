@@ -53,8 +53,6 @@ func ApiPayin(DB *gorm.DB, r *http.Request) string {
 	if err := json.NewDecoder(r.Body).Decode(&payinRequest); err != nil {
 		fmt.Println("Invalid JSON format")
 	}
-	fmt.Println(payinRequest.Amount)
-	fmt.Println(payinRequest.Channel)
 	params := map[string]string{
 		"merchant":    gatewayAccount,
 		"paymentType": payinRequest.PaymentType, //1059
@@ -127,6 +125,9 @@ func ApiPayin(DB *gorm.DB, r *http.Request) string {
 	if err != nil {
 		log.Printf("Error reading response body: %v", err)
 	}
+	fmt.Println("API : " + url)
+	fmt.Printf("%+v\n", finalPayload)
+	fmt.Println("Response : " + string(body))
 
 	currentTime := time.Now()
 	year := currentTime.Year()
