@@ -55,7 +55,7 @@ func ApiPayin(DB *gorm.DB, r *http.Request) string {
 	}
 	params := map[string]string{
 		"merchant":    gatewayAccount,
-		"paymentType": payinRequest.PaymentType, //1059
+		"paymentType": payinRequest.PaymentType,
 		"gold":        payinRequest.Amount,
 		"channel":     payinRequest.Channel,
 		"notify_url":  payinRequest.NotiUrl,
