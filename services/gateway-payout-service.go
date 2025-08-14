@@ -46,7 +46,7 @@ type PayOutPayload struct {
 	TransferAccount string `json:"transferAccount"`
 	Name            string `json:"name"`
 	Phone           string `json:"phone"`
-	BankCode        string `json:"bankCode"`
+	//BankCode        string `json:"bankCode"`
 	//IdCard          string `json:"idCard"`
 	Sign string `json:"sign"`
 }
@@ -72,7 +72,7 @@ func ApiPayout(DB *gorm.DB, r *http.Request) string {
 		"transferAccount": payoutRequest.PayoutAccount,
 		"name":            payoutRequest.PayoutName,
 		"phone":           payoutRequest.PayoutPhone,
-		"bankCode":        payoutRequest.BankProvider,
+		//"bankCode":        payoutRequest.BankProvider,
 	}
 
 	keys := make([]string, 0, len(params))
@@ -98,7 +98,7 @@ func ApiPayout(DB *gorm.DB, r *http.Request) string {
 
 	// --- Step 3: Construct the final payload struct ---
 	finalPayload := PayOutPayload{
-		BankCode:        payoutRequest.BankProvider,
+		//BankCode:        payoutRequest.BankProvider,
 		Channel:         payoutRequest.Channel,
 		FeeType:         payoutRequest.FeeType,
 		Gold:            payoutRequest.Amount,
