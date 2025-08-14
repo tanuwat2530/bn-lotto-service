@@ -39,8 +39,8 @@ type PayOutPayload struct {
 	Merchant    string `json:"merchant"`
 	Gold        string `json:"gold"`
 	Channel     string `json:"channel"` //0 = QR Code, 1 = Bank Transfer
-	OrderID     string `json:"orderId"`
-	NotifyURL   string `json:"notify_url"`
+	//OrderID     string `json:"orderId"`
+	NotifyURL string `json:"notify_url"`
 	//OrderAttach     string `json:"order_attach"`
 	FeeType         string `json:"feeType"`
 	TransferAccount string `json:"transferAccount"`
@@ -161,7 +161,7 @@ func ApiPayout(DB *gorm.DB, r *http.Request) string {
 	timeString := fmt.Sprintf("%02d:%02d:%02d", hour, minute, second)
 	PayoutData := models.Payouts{
 		//Id:          ,
-		OrderId:     "",
+		//OrderId:     "",
 		RequestDate: dateString,
 		RequestTime: timeString,
 		GatewayData: string(body),
