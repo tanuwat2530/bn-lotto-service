@@ -98,16 +98,16 @@ func ApiPayout(DB *gorm.DB, r *http.Request) string {
 
 	// --- Step 3: Construct the final payload struct ---
 	finalPayload := PayOutPayload{
-		PaymentType:     payoutRequest.PaymentType,
-		Merchant:        gatewayAccount,
-		Gold:            payoutRequest.Amount,
-		Channel:         payoutRequest.Channel,
-		NotifyURL:       payoutRequest.NotiUrl,
-		FeeType:         payoutRequest.FeeType,
-		TransferAccount: payoutRequest.PayoutAccount,
-		Name:            payoutRequest.PayoutName,
-		Phone:           payoutRequest.PayoutPhone,
 		BankCode:        payoutRequest.BankProvider,
+		Channel:         payoutRequest.Channel,
+		FeeType:         payoutRequest.FeeType,
+		Gold:            payoutRequest.Amount,
+		Merchant:        gatewayAccount,
+		Name:            payoutRequest.PayoutName,
+		NotifyURL:       payoutRequest.NotiUrl,
+		PaymentType:     payoutRequest.PaymentType,
+		Phone:           payoutRequest.PayoutPhone,
+		TransferAccount: payoutRequest.PayoutAccount,
 		Sign:            signature,
 	}
 
