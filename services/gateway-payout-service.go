@@ -88,7 +88,7 @@ func ApiPayout(DB *gorm.DB, r *http.Request) string {
 	// Join all parts with an ampersand.
 	queryString := strings.Join(parts, "&")
 	str := queryString + "&key=" + secretKey
-
+	fmt.Println(str)
 	// 3. Perform an MD5 hash on the resulting string.
 	hasher := md5.New()
 	hasher.Write([]byte(str))
