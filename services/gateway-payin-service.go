@@ -55,6 +55,7 @@ func ApiPayin(DB *gorm.DB, r *http.Request) string {
 	}
 	params := map[string]string{
 		"merchant":    gatewayAccount,
+		"orderId":     payinRequest.MemberId,
 		"paymentType": payinRequest.PaymentType,
 		"gold":        payinRequest.Amount,
 		"channel":     payinRequest.Channel,
@@ -86,6 +87,7 @@ func ApiPayin(DB *gorm.DB, r *http.Request) string {
 	// --- Step 3: Construct the final payload struct ---
 	finalPayload := PayInPayload{
 		Merchant:    gatewayAccount,
+		OrderID:     payinRequest.MemberId,
 		PaymentType: payinRequest.PaymentType,
 		Gold:        payinRequest.Amount,
 		Channel:     payinRequest.Channel,
@@ -142,7 +144,7 @@ func ApiPayin(DB *gorm.DB, r *http.Request) string {
 
 	PayinData := models.Payins{
 		//Id:          "",
-		OrderId:     "",
+		OrderId:     payinRequest.MemberId,
 		RequestDate: dateString,
 		RequestTime: timeString,
 		GatewayData: string(body),

@@ -66,7 +66,7 @@ func (h *LottoHandler) PaymentChannel(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	controllers.PaymentChannelController(h.DB, w, r)
+	//controllers.PaymentChannelController(h.DB, w, r)
 }
 
 func (h *LottoHandler) BankProvider(w http.ResponseWriter, r *http.Request) {
@@ -75,7 +75,7 @@ func (h *LottoHandler) BankProvider(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	controllers.BankProviderController(h.DB, w, r)
+	//controllers.BankProviderController(h.DB, w, r)
 }
 
 func (h *LottoHandler) PayIn(w http.ResponseWriter, r *http.Request) {
@@ -102,5 +102,5 @@ func (h *LottoHandler) PaymentNoti(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	controllers.PayOutNotificationController(h.DB, w, r)
+	controllers.OrderNotiController(h.DB, w, r)
 }

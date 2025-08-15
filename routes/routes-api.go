@@ -29,11 +29,12 @@ func SetupRoutes(db *gorm.DB) http.Handler {
 	mux.HandleFunc("/lotto-api/bet", lottoHandlers.Bet)
 	mux.HandleFunc("/lotto-api/history", lottoHandlers.History)
 
-	mux.HandleFunc("/gateway-api/payment-channel", lottoHandlers.PaymentChannel)
-	mux.HandleFunc("/gateway-api/bank-provider", lottoHandlers.BankProvider)
+	//mux.HandleFunc("/gateway-api/payment-channel", lottoHandlers.PaymentChannel)
+	//mux.HandleFunc("/gateway-api/bank-provider", lottoHandlers.BankProvider)
+	//mux.HandleFunc("/gateway-api/payment-status", lottoHandlers.PaymentNoti)
 	mux.HandleFunc("/gateway-api/pay-in", lottoHandlers.PayIn)
 	mux.HandleFunc("/gateway-api/pay-out", lottoHandlers.PayOut)
-	mux.HandleFunc("/gateway-api/payment-status", lottoHandlers.PaymentNoti)
+	mux.HandleFunc("/gateway-api/order-noti", lottoHandlers.PaymentNoti)
 
 	mux.HandleFunc("/lotto-api/", HomeHandler)
 	return mux

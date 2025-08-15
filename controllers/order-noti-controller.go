@@ -10,7 +10,7 @@ import (
 )
 
 // GetUsers handles GET /users
-func PayOutNotificationController(DB *gorm.DB, w http.ResponseWriter, r *http.Request) {
-	response := services.PayOutNotification(DB, r)
+func OrderNotiController(DB *gorm.DB, w http.ResponseWriter, r *http.Request) {
+	response := services.OrderNoti(DB, r)
 	utils.RespondWithJSON(w, http.StatusOK, response)
 }
