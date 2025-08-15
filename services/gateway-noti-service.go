@@ -7,13 +7,19 @@ import (
 	models "lotto-backend-api/models"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"gorm.io/gorm"
 )
 
-type Member struct {
-	MemberId string `json:"orderId"`
+type OrderNotiJson struct {
+	OrderNo string `json:"order_no"`
+	Gold    string `json:"gold"`
+}
+type Credit struct {
+	MemberId     string `json:"id"`
+	MemberCredit string `json:"credit_balance"`
 }
 
 func OrderNoti(DB *gorm.DB, r *http.Request) map[string]string {
@@ -59,15 +65,70 @@ func OrderNoti(DB *gorm.DB, r *http.Request) map[string]string {
 	fmt.Println(string(jsonOutput))
 
 	// Create a variable of the struct type
-	var member Member
-
+	var orderNotiJson OrderNotiJson
 	// Unmarshal the JSON string into the struct
-	err = json.Unmarshal([]byte(string(jsonOutput)), &member)
+	err = json.Unmarshal([]byte(string(jsonOutput)), &orderNotiJson)
 	if err != nil {
 		fmt.Println("Error unmarshaling JSON:", err)
 	}
-	// Access the orderId field directly
-	fmt.Println("Member ID :", member.MemberId)
+	fmt.Println("order_no:", orderNotiJson.OrderNo)
+	fmt.Println("gold:", orderNotiJson.Gold)
+
+	var payIn models.Payins
+	payin_result := DB.Where("order_id = ?", orderNotiJson.OrderNo).First(&payIn)
+	if payin_result.Error != nil {
+		res := map[string]string{
+			"code":    "-1",
+			"message": "Order Not Found",
+		}
+		return res
+	}
+	fmt.Println(payIn.MemberId)
+	fmt.Println(payIn.OrderId)
+	fmt.Println(payIn.RequestData)
+
+	var member models.Members
+	member_result := DB.Where("id = ?", payIn.MemberId).First(&member)
+	if member_result.Error != nil {
+		res := map[string]string{
+			"code":    "-1",
+			"message": "Member Not Found",
+		}
+		return res
+	}
+
+	credit := Credit{
+		MemberId:     member.Id,
+		MemberCredit: member.CreditBalance,
+	}
+	fmt.Println("Member ID : " + credit.MemberId)
+	fmt.Println("Member Credit : " + credit.MemberCredit)
+	num1, _ := strconv.Atoi(member.CreditBalance)
+	num2, _ := strconv.Atoi(orderNotiJson.Gold)
+	sum := num1 + num2
+	fmt.Println("Current Credit : " + strconv.Itoa(sum))
+
+	//UPDATE CREDIT
+	if err := DB.Model(&member).
+		Where("id = ?", credit.MemberId).
+		Update("credit_balance", strconv.Itoa(sum)).Error; err != nil {
+		res := map[string]string{
+			"code":    "-1",
+			"message": "Update member credit_balance : " + err.Error(),
+		}
+		return res
+	}
+
+	//UPDATE PAYIN
+	if err := DB.Model(&payIn).
+		Where("order_id = ?", payIn.OrderId).
+		Update("order_id", payIn.OrderId+":DONE").Error; err != nil {
+		res := map[string]string{
+			"code":    "-1",
+			"message": "Update payin order_id : " + err.Error(),
+		}
+		return res
+	}
 
 	currentTime := time.Now()
 	// Format as "YYYY-MM-DD"
@@ -76,15 +137,15 @@ func OrderNoti(DB *gorm.DB, r *http.Request) map[string]string {
 	orders := models.Orders{
 		Date:      formattedDate,
 		Time:      formattedTime,
-		MemberId:  member.MemberId,
+		MemberId:  payIn.MemberId,
 		OrderData: string(jsonOutput),
 	}
 
-	result := DB.Create(&orders)
-	if result.Error != nil {
+	orders_result := DB.Create(&orders)
+	if orders_result.Error != nil {
 		res := map[string]string{
 			"code":    "-1",
-			"message": result.Error.Error(),
+			"message": "Insert orders error : " + orders_result.Error.Error(),
 		}
 		return res
 	}

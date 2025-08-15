@@ -35,11 +35,21 @@ type PayInPayload struct {
 	Merchant    string `json:"merchant"`
 	Gold        string `json:"gold"`
 	Channel     string `json:"channel"`
-	OrderID     string `json:"orderId"`
-	NotifyURL   string `json:"notify_url"`
-	OrderAttach string `json:"order_attach"`
-	FeeType     string `json:"feeType"`
-	Sign        string `json:"sign"`
+
+	//OrderID     string `json:"orderId"`
+	NotifyURL string `json:"notify_url"`
+	//OrderAttach string `json:"order_attach"`
+	FeeType string `json:"feeType"`
+	Sign    string `json:"sign"`
+}
+
+type DepositResponse struct {
+	Code int8        `json:"code"`
+	Data DepositData `json:"data"`
+}
+type DepositData struct {
+	OrderNo string `json:"order_no"`
+	PayURL  string `json:"payUrl"`
 }
 
 // ApiPayin constructs the request, generates a signature, and sends the request.
@@ -54,8 +64,8 @@ func ApiPayin(DB *gorm.DB, r *http.Request) string {
 		fmt.Println("Invalid JSON format")
 	}
 	params := map[string]string{
-		"merchant":    gatewayAccount,
-		"orderId":     payinRequest.MemberId,
+		"merchant": gatewayAccount,
+		//"orderId":     payinRequest.MemberId,
 		"paymentType": payinRequest.PaymentType,
 		"gold":        payinRequest.Amount,
 		"channel":     payinRequest.Channel,
@@ -86,8 +96,8 @@ func ApiPayin(DB *gorm.DB, r *http.Request) string {
 
 	// --- Step 3: Construct the final payload struct ---
 	finalPayload := PayInPayload{
-		Merchant:    gatewayAccount,
-		OrderID:     payinRequest.MemberId,
+		Merchant: gatewayAccount,
+		//OrderID:     payinRequest.MemberId,
 		PaymentType: payinRequest.PaymentType,
 		Gold:        payinRequest.Amount,
 		Channel:     payinRequest.Channel,
@@ -142,16 +152,26 @@ func ApiPayin(DB *gorm.DB, r *http.Request) string {
 	second := currentTime.Second()
 	timeString := fmt.Sprintf("%02d:%02d:%02d", hour, minute, second)
 
+	// Create a variable of the struct type
+	var depositResponse DepositResponse
+
+	// Unmarshal the JSON string into the struct
+	err = json.Unmarshal([]byte(string(body)), &depositResponse)
+	if err != nil {
+		fmt.Println("Error unmarshaling JSON:", err)
+	}
+	fmt.Println("Code:", depositResponse.Code)
+	fmt.Println("Order Number:", depositResponse.Data.OrderNo)
+	fmt.Println("Payment URL:", depositResponse.Data.PayURL)
 	PayinData := models.Payins{
 		//Id:          "",
-		OrderId:     payinRequest.MemberId,
+		OrderId:     depositResponse.Data.OrderNo,
 		RequestDate: dateString,
 		RequestTime: timeString,
-		GatewayData: string(body),
+		GatewayData: string(body), //Response from Gateway
 		RequestData: string(payloadBytes),
 		MemberId:    payinRequest.MemberId,
 	}
-
 	result := DB.Create(&PayinData)
 	if result.Error != nil {
 		fmt.Println("PAYIN INSERT ERROR")
