@@ -170,9 +170,9 @@ func ApiPayout(DB *gorm.DB, r *http.Request) string {
 
 	}
 
-	// fmt.Println("API : " + url)
-	// fmt.Printf("%+v\n", finalPayload)
-	// fmt.Println("Response : " + string(body))
+	fmt.Println("PAY-OUT API : " + url)
+	fmt.Printf("%+v\n", finalPayload)
+	fmt.Println("Response : " + string(body))
 
 	currentTime := time.Now()
 	year := currentTime.Year()

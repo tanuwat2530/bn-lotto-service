@@ -137,7 +137,7 @@ func ApiPayin(DB *gorm.DB, r *http.Request) string {
 	if err != nil {
 		log.Printf("Error reading response body: %v", err)
 	}
-	fmt.Println("API : " + url)
+	fmt.Println("PAY-IN API : " + url)
 	fmt.Printf("%+v\n", finalPayload)
 	fmt.Println("Response : " + string(body))
 
