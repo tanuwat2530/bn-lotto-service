@@ -23,6 +23,7 @@ type Credit struct {
 }
 
 func OrderNoti(DB *gorm.DB, r *http.Request) map[string]string {
+
 	// Read the request body
 	body, err := io.ReadAll(r.Body)
 	if err != nil {

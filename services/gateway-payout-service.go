@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"strconv"
 	"time"
 
 	"net/http"
@@ -57,9 +58,33 @@ func ApiPayout(DB *gorm.DB, r *http.Request) string {
 	gatewayAccount := os.Getenv("GATEWAY_ACCOUNT")
 
 	var payoutRequest PayoutRequest
-
 	if err := json.NewDecoder(r.Body).Decode(&payoutRequest); err != nil {
 		fmt.Println("Invalid JSON format")
+	}
+
+	var member models.Members // This is your full database model, including the password
+
+	credit_result := DB.Where("id = ?", payoutRequest.MemberId).First(&member)
+	if credit_result.Error != nil {
+		return "NOT FOUND ACCOUNT"
+	}
+
+	fmt.Println("Request Credit : " + payoutRequest.Amount)
+	fmt.Println("Current Credit : " + member.CreditBalance)
+	requestCredit, err := strconv.ParseInt(payoutRequest.Amount, 10, 64)
+	if err != nil {
+		return "Invalid input"
+	}
+
+	currentCredit, err := strconv.ParseInt(member.CreditBalance, 10, 64)
+	if err != nil {
+		return "Invalid input"
+	}
+
+	// Go's if statements do not require parentheses around the condition.
+	// The opening brace must be on the same line as the condition.
+	if requestCredit > currentCredit {
+		return "NOT ALLOWED TO WITHDRAW"
 	}
 
 	params := map[string]string{
