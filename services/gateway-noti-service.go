@@ -63,7 +63,7 @@ func OrderNoti(DB *gorm.DB, r *http.Request) map[string]string {
 		}
 		return res
 	}
-	fmt.Println(string(jsonOutput))
+	fmt.Println("Json Format : ", string(jsonOutput))
 
 	// Create a variable of the struct type
 	var orderNotiJson OrderNotiJson
@@ -84,9 +84,9 @@ func OrderNoti(DB *gorm.DB, r *http.Request) map[string]string {
 		}
 		return res
 	}
-	fmt.Println(payIn.MemberId)
-	fmt.Println(payIn.OrderId)
-	fmt.Println(payIn.RequestData)
+	fmt.Println("Member ID :", payIn.MemberId)
+	fmt.Println("Order ID : ", payIn.OrderId)
+	fmt.Println("Request Data : ", payIn.RequestData)
 
 	var member models.Members
 	member_result := DB.Where("id = ?", payIn.MemberId).First(&member)

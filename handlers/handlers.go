@@ -104,3 +104,21 @@ func (h *LottoHandler) PaymentNoti(w http.ResponseWriter, r *http.Request) {
 	}
 	controllers.OrderNotiController(h.DB, w, r)
 }
+
+func (h *LottoHandler) PromtpayCreditNoti(w http.ResponseWriter, r *http.Request) {
+	// Check if the method is POST
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	controllers.PromtpayNotiController(h.DB, w, r)
+}
+
+func (h *LottoHandler) Promtpay(w http.ResponseWriter, r *http.Request) {
+	// Check if the method is POST
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	controllers.QrPromtpayController(h.DB, w, r)
+}
