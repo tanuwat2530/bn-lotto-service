@@ -7,6 +7,7 @@ import (
 	"lotto-backend-api/models"
 	"os"
 	"strconv"
+	"time"
 
 	"net/http"
 
@@ -71,12 +72,17 @@ func ApiPromtpay(DB *gorm.DB, r *http.Request) map[string]interface{} {
 	fmt.Println("promtpays table : ", promtpayTB.TotalWithdraw)
 	fmt.Println("promtpays table : ", promtpayTB.Counter)
 
+	now := time.Now()
+	// Unix timestamp (seconds since epoch)
+	fmt.Println("Unix timestamp (seconds):", now.Unix())
+
 	// 3. Construct the filename with the required information.
-	fileName := fmt.Sprintf("%s%s|%s|%s.png",
+	fileName := fmt.Sprintf("%s|%s|%s|%s|%v.png",
 		savePath,
 		req.MemberId,
 		promtpayTB.QrId,
 		strconv.FormatInt(req.Amount, 10),
+		now.Unix(),
 	)
 
 	// Your existing QR code generation logic
@@ -105,7 +111,12 @@ func ApiPromtpay(DB *gorm.DB, r *http.Request) map[string]interface{} {
 
 	fmt.Printf("Successfully generated PromptPay QR code and saved to %s\n", fileName)
 	return map[string]interface{}{
-		"code":     "200",
-		"filename": fileName, // <-- Return the sanitized responseData object
+		"code":           "200",
+		"qr_image":       fileName,
+		"qr_id":          promtpayTB.QrId,
+		"qr_name":        promtpayTB.QrName,
+		"bank_provider":  promtpayTB.BankProvider,
+		"member_request": qrPromtpayRequest.MemberId,
+		"timestamp":      now.Unix(),
 	}
 }

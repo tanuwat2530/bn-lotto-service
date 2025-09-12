@@ -6,4 +6,5 @@ type Promtpays struct {
 	TotalDeposit  int64  `json:"total_deposit"`
 	TotalWithdraw int64  `json:"total_withdraw"`
 	Counter       int64  `json:"counter"`
+	BankProvider  string `json:"bank_provider"`
 }
