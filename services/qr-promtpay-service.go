@@ -40,9 +40,10 @@ func ApiPromtpay(DB *gorm.DB, r *http.Request) map[string]interface{} {
 	if err := json.NewDecoder(r.Body).Decode(&qrPromtpayRequest); err != nil {
 		return map[string]interface{}{
 			"code":    "-1",
-			"message": "Invalid JSON format",
+			"message": "qr-protpay-service Invalid JSON format",
 		}
 	}
+
 	// Assuming you've parsed the JSON body into a QrPromtpayRequest struct,
 	// let's use some placeholder values for this example.
 	req := QrPromtpayRequest{
@@ -77,7 +78,7 @@ func ApiPromtpay(DB *gorm.DB, r *http.Request) map[string]interface{} {
 	fmt.Println("Unix timestamp (seconds):", now.Unix())
 
 	// 3. Construct the filename with the required information.
-	fileName := fmt.Sprintf("%s|%s|%s|%s|%v.png",
+	fileName := fmt.Sprintf("%s%s|%s|%s|%v.png",
 		savePath,
 		req.MemberId,
 		promtpayTB.QrId,
@@ -112,7 +113,8 @@ func ApiPromtpay(DB *gorm.DB, r *http.Request) map[string]interface{} {
 	fmt.Printf("Successfully generated PromptPay QR code and saved to %s\n", fileName)
 	return map[string]interface{}{
 		"code":           "200",
-		"qr_image":       fileName,
+		"qr_img_name":    qrPromtpayRequest.MemberId + "|" + promtpayTB.QrId + "|" + strconv.FormatInt(req.Amount, 10) + "|" + strconv.FormatInt(now.Unix(), 10) + ".png",
+		"qr_img_path":    fileName,
 		"qr_id":          promtpayTB.QrId,
 		"qr_name":        promtpayTB.QrName,
 		"bank_provider":  promtpayTB.BankProvider,
