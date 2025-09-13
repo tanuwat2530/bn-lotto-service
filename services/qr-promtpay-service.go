@@ -1,15 +1,16 @@
 package services
 
 import (
+	"crypto/md5" // Package for MD5 hashing
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
-	"lotto-backend-api/models"
+	models "lotto-backend-api/models"
+	"net/http"
 	"os"
 	"strconv"
 	"time"
-
-	"net/http"
 
 	promtpay "github.com/Frontware/promptpay"
 	qrcode "github.com/skip2/go-qrcode"
@@ -19,14 +20,6 @@ import (
 type QrPromtpayRequest struct {
 	MemberId string `json:"member_id"`
 	Amount   int64  `json:"amount"`
-}
-
-type QrPromtpayResponse struct {
-	Id        string `json:"id"`
-	MemberId  string `json:"member_id"`
-	Amount    string `json:"amount"`
-	QrImg     string `json:"qr_img"`
-	Timestamp string `json:"timestamp"`
 }
 
 // ApiPayin constructs the request, generates a signature, and sends the request.
@@ -111,9 +104,44 @@ func ApiPromtpay(DB *gorm.DB, r *http.Request) map[string]interface{} {
 	}
 
 	fmt.Printf("Successfully generated PromptPay QR code and saved to %s\n", fileName)
+	qrImageName := qrPromtpayRequest.MemberId + "|" + promtpayTB.QrId + "|" + strconv.FormatInt(req.Amount, 10) + "|" + strconv.FormatInt(now.Unix(), 10) + ".png"
+
+	md5Helper := md5.New()
+	io.WriteString(md5Helper, qrImageName)
+	hashSum := md5Helper.Sum(nil)
+	hashString := fmt.Sprintf("%x", hashSum)
+
+	// Save request to Orders table
+	currentTime := time.Now()
+	// Format as "YYYY-MM-DD"
+	formattedDate := currentTime.Format("2006-01-02")
+	formattedTime := currentTime.Format("15:04:05")
+
+	// Add 1 minute to the current time
+	oneMinuteLater := now.Add(4 * time.Minute)
+
+	// Convert the new time to a Unix timestamp (in seconds)
+	unixTimestamp := oneMinuteLater.Unix()
+	orders := models.Orders{
+		Date:       formattedDate,
+		Time:       formattedTime,
+		MemberId:   req.MemberId,
+		OrderData:  hashString,
+		ExpireTime: unixTimestamp,
+	}
+
+	orders_result := DB.Create(&orders)
+	if orders_result.Error != nil {
+		res := map[string]interface{}{
+			"code":    "-1",
+			"message": "Insert orders error : " + orders_result.Error.Error(),
+		}
+		return res
+	}
+
 	return map[string]interface{}{
 		"code":           "200",
-		"qr_img_name":    qrPromtpayRequest.MemberId + "|" + promtpayTB.QrId + "|" + strconv.FormatInt(req.Amount, 10) + "|" + strconv.FormatInt(now.Unix(), 10) + ".png",
+		"qr_img_name":    qrImageName,
 		"qr_img_path":    fileName,
 		"qr_id":          promtpayTB.QrId,
 		"qr_name":        promtpayTB.QrName,
