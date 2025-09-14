@@ -23,7 +23,7 @@ type UserCredit struct {
 }
 
 func PromtpayNoti(DB *gorm.DB, r *http.Request) map[string]string {
-
+	message := "expire"
 	var addCreditRequest AddCreditRequest
 	if err := json.NewDecoder(r.Body).Decode(&addCreditRequest); err != nil {
 		return map[string]string{
@@ -33,7 +33,6 @@ func PromtpayNoti(DB *gorm.DB, r *http.Request) map[string]string {
 	}
 
 	var orders models.Orders
-
 	orders_result := DB.Where("member_id = ? AND order_data = ?", addCreditRequest.MemberId, addCreditRequest.OrderId).First(&orders)
 	if orders_result.Error != nil {
 		res := map[string]string{
@@ -42,12 +41,10 @@ func PromtpayNoti(DB *gorm.DB, r *http.Request) map[string]string {
 		}
 		return res
 	}
-
 	currentTime := time.Now()
 	timestampSeconds := currentTime.Unix()
 	if timestampSeconds <= orders.ExpireTime {
 		fmt.Println("ADD CREDIT")
-
 		var member models.Members
 		member_result := DB.Where("id = ?", addCreditRequest.MemberId).First(&member)
 		if member_result.Error != nil {
@@ -62,11 +59,13 @@ func PromtpayNoti(DB *gorm.DB, r *http.Request) map[string]string {
 			Id:           member.Id,
 			MemberCredit: member.CreditBalance,
 		}
-		fmt.Println("Member ID : " + credit.Id)
-		fmt.Println("Member Credit : " + credit.MemberCredit)
+
 		num1, _ := strconv.Atoi(member.CreditBalance)
 		num2, _ := strconv.Atoi(addCreditRequest.Credit)
 		sum := num1 + num2
+
+		fmt.Println("Member ID : " + credit.Id)
+		fmt.Println("Member Credit : " + credit.MemberCredit)
 		fmt.Println("Current Credit : " + strconv.Itoa(sum))
 
 		//UPDATE CREDIT
@@ -90,11 +89,13 @@ func PromtpayNoti(DB *gorm.DB, r *http.Request) map[string]string {
 			}
 			return res
 		}
+		message = "success"
 	}
 
 	res := map[string]string{
 		"code":    "0",
-		"message": "Success",
+		"message": message,
 	}
 	return res
+
 }
