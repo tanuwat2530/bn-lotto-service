@@ -107,7 +107,7 @@ func (h *LottoHandler) PaymentNoti(w http.ResponseWriter, r *http.Request) {
 
 func (h *LottoHandler) PromtpayCreditNoti(w http.ResponseWriter, r *http.Request) {
 	// Check if the method is POST
-	if r.Method != http.MethodGet {
+	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}

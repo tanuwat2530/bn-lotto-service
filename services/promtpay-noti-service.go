@@ -1,6 +1,7 @@
 package services
 
 import (
+	"encoding/json"
 	"fmt"
 	models "lotto-backend-api/models"
 	"net/http"
@@ -14,68 +15,81 @@ type AddCreditRequest struct {
 	MemberId   string `json:"member_id"`
 	Credit     string `json:"credit"`
 	SecretSign string `json:"secret_sign"`
+	OrderId    string `json:"order_id"`
 }
 type UserCredit struct {
-	MemberId     string `json:"id"`
+	Id           string `json:"id"`
 	MemberCredit string `json:"credit_balance"`
 }
 
 func PromtpayNoti(DB *gorm.DB, r *http.Request) map[string]string {
 
-	fmt.Println("Param : ", r.URL.Query().Get("member_id"))
-	fmt.Println("Param : ", r.URL.Query().Get("credit"))
-	fmt.Println("Param : ", r.URL.Query().Get("secret_sign"))
-
-	var member models.Members
-	member_result := DB.Where("id = ?", r.URL.Query().Get("member_id")).First(&member)
-	if member_result.Error != nil {
-		res := map[string]string{
+	var addCreditRequest AddCreditRequest
+	if err := json.NewDecoder(r.Body).Decode(&addCreditRequest); err != nil {
+		return map[string]string{
 			"code":    "-1",
-			"message": "Member Not Found",
+			"message": "promtpay-noti-service Invalid JSON format",
 		}
-		return res
 	}
 
-	credit := UserCredit{
-		MemberId:     member.Id,
-		MemberCredit: member.CreditBalance,
-	}
-	fmt.Println("Member ID : " + credit.MemberId)
-	fmt.Println("Member Credit : " + credit.MemberCredit)
-	num1, _ := strconv.Atoi(member.CreditBalance)
-	num2, _ := strconv.Atoi(r.URL.Query().Get("credit"))
-	sum := num1 + num2
-	fmt.Println("Current Credit : " + strconv.Itoa(sum))
+	var orders models.Orders
 
-	//UPDATE CREDIT
-	if err := DB.Model(&member).
-		Where("id = ?", credit.MemberId).
-		Update("credit_balance", strconv.Itoa(sum)).Error; err != nil {
+	orders_result := DB.Where("member_id = ? AND order_data = ?", addCreditRequest.MemberId, addCreditRequest.OrderId).First(&orders)
+	if orders_result.Error != nil {
 		res := map[string]string{
 			"code":    "-1",
-			"message": "Update member credit_balance : " + err.Error(),
+			"message": "Not found data : " + orders_result.Error.Error(),
 		}
 		return res
 	}
 
 	currentTime := time.Now()
-	// Format as "YYYY-MM-DD"
-	formattedDate := currentTime.Format("2006-01-02")
-	formattedTime := currentTime.Format("15:04:05")
-	orders := models.Orders{
-		Date:      formattedDate,
-		Time:      formattedTime,
-		MemberId:  credit.MemberId,
-		OrderData: r.URL.Query().Get("member_id") + "|" + r.URL.Query().Get("credit"),
-	}
+	timestampSeconds := currentTime.Unix()
+	if timestampSeconds <= orders.ExpireTime {
+		fmt.Println("ADD CREDIT")
 
-	orders_result := DB.Create(&orders)
-	if orders_result.Error != nil {
-		res := map[string]string{
-			"code":    "-1",
-			"message": "Insert orders error : " + orders_result.Error.Error(),
+		var member models.Members
+		member_result := DB.Where("id = ?", addCreditRequest.MemberId).First(&member)
+		if member_result.Error != nil {
+			res := map[string]string{
+				"code":    "-1",
+				"message": "Member Not Found",
+			}
+			return res
 		}
-		return res
+
+		credit := UserCredit{
+			Id:           member.Id,
+			MemberCredit: member.CreditBalance,
+		}
+		fmt.Println("Member ID : " + credit.Id)
+		fmt.Println("Member Credit : " + credit.MemberCredit)
+		num1, _ := strconv.Atoi(member.CreditBalance)
+		num2, _ := strconv.Atoi(addCreditRequest.Credit)
+		sum := num1 + num2
+		fmt.Println("Current Credit : " + strconv.Itoa(sum))
+
+		//UPDATE CREDIT
+		if err := DB.Model(&member).
+			Where("id = ?", credit.Id).
+			Update("credit_balance", strconv.Itoa(sum)).Error; err != nil {
+			res := map[string]string{
+				"code":    "-1",
+				"message": "Update member credit_balance : " + err.Error(),
+			}
+			return res
+		}
+
+		//UPDATE ORDER
+		if err := DB.Model(&orders).
+			Where("id = ?", orders.Id).
+			Update("expire_time", timestampSeconds).Error; err != nil {
+			res := map[string]string{
+				"code":    "-1",
+				"message": "Update order expire time : " + err.Error(),
+			}
+			return res
+		}
 	}
 
 	res := map[string]string{
