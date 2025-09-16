@@ -114,6 +114,15 @@ func (h *LottoHandler) PromtpayCreditNoti(w http.ResponseWriter, r *http.Request
 	controllers.PromtpayNotiController(h.DB, w, r)
 }
 
+func (h *LottoHandler) WitdrawCreditNoti(w http.ResponseWriter, r *http.Request) {
+	// Check if the method is POST
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+	controllers.WithdrawCreditController(h.DB, w, r)
+}
+
 func (h *LottoHandler) Promtpay(w http.ResponseWriter, r *http.Request) {
 	// Check if the method is POST
 	if r.Method != http.MethodPost {

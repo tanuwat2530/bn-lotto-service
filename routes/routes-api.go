@@ -38,6 +38,7 @@ func SetupRoutes(db *gorm.DB) http.Handler {
 
 	mux.HandleFunc("/transfer-api/promtpay", lottoHandlers.Promtpay)
 	mux.HandleFunc("/transfer-api/promtpay-credit", lottoHandlers.PromtpayCreditNoti)
+	mux.HandleFunc("/transfer-api/withdraw-credit", lottoHandlers.WitdrawCreditNoti)
 
 	mux.HandleFunc("/lotto-api/", HomeHandler)
 	return mux
